@@ -1,0 +1,191 @@
+2)
+create or replace trigger trig1
+after insert on participated
+for each row
+declare
+cursor c1 is
+select *
+from person
+where driver_id# = :new.driver_id#;
+cr c1%rowtype;
+begin
+	for cr in c1 loop
+		dbms_output.put_line(cr.driver_id# || cr.name || cr.address);
+	end loop;
+end;
+/
+
+
+3)
+set serveroutput on
+create or replace function returntotal(year int)
+return int as
+totalaccd int;
+begin
+select count(report_number) into totalaccd
+from accident
+where extract(year from accd_date) = year;
+return totalaccd;
+end;
+/
+
+4)
+set serveroutput on
+create or replace procedure totdmg (driver varchar,year int)
+as
+totdmg int;
+begin
+select sum(damage_amount) into totdmg
+from accident natural join participated
+where extract (year from accd_date) = year
+group by driver_id#
+having driver_id# = driver;
+dbms_output.put_line('Total damage for ' || driver || ' in year '  || year || ' is ' || totdmg);
+end;
+/
+
+5)
+create or replace procedure accdinfo(loc varchar)
+as
+cursor c1 is
+select *
+from accident
+where location = loc;
+cr c1%rowtype;
+begin
+	for cr in c1 loop
+		dbms_output.put_line('report: '|| cr.report_number || 'date: ' || cr.accd_date);
+	end loop;
+end;
+/
+
+6)
+
+create table t1(
+cust# int primary key,
+cname varchar(50),
+city varchar(30));
+
+create or replace procedure insert1 
+as
+namet varchar(50);
+cityt varchar(30);
+cursor c1 is
+select cust , sum(ordamt) as amt
+from orders natural join customer
+group by cust;
+cr c1%rowtype;
+begin
+	for cr in c1 loop
+		if(cr.amt > 450) then
+			select cname,city into namet,cityt
+			from customer
+			where cust = cr.cust;
+			insert into t1 values(cr.cust,namet,cityt);
+		end if;
+	end loop;
+
+end;
+/
+
+
+7)
+create or replace procedure accdloc
+as
+cursor c1 is
+select *
+from accident;
+cr c1%rowtype;
+begin
+	for cr in c1 loop
+		if(cr.location = 'LOL') then
+			insert into lol values(cr.report_number,cr.accd_date,cr.location);
+		elsif(cr.location = 'LOL2') then
+			insert into lol2 values(cr.report_number,cr.accd_date,cr.location);
+		end if;
+	end loop;
+end;
+/
+
+create table lol2(
+report_number int primary key,
+accd_date date,
+location varchar(50));
+
+Additional
+
+2)
+create or replace trigger trig2
+after insert on participated
+for each row
+declare
+cursor c1 is
+select count(report_number) as totaccd
+from participated
+where driver_id# = :new.driver_id#;
+cr c1%rowtype;
+begin
+	for cr in c1 loop
+		if(cr.totaccd >=2) then
+			dbms_output.put_line('You have reached more than 2 acidents!!!!');  
+		end if;
+	end loop;
+end;
+/
+
+3)
+create or replace procedure discount 
+as
+cursor c1 is
+select order#,ordamt*0.20 as discount_amt
+from orders
+where order# in(
+select order#
+from order_items
+group by order#
+having sum(qty) >=7);
+cr c1%rowtype;
+begin
+	for cr in c1 loop
+		dbms_output.put_line(cr.order# ||' '|| cr.discount_amt);
+	end loop;
+end;
+/
+		
+
+1)
+create table bankaccount(
+acct int,
+bal int,
+primary key(bal));
+
+create or replace function withdraw(acct1 int , money int)
+return int is
+currbal int;
+new_bal int;
+begin
+	select bal into currbal
+	from bankaccount
+	where acct = acct1;
+	if (currbal < money) then
+		dbms_output.put_line('Not enough balance');
+		return currbal;
+	else	
+		new_bal := currbal - money;
+		update bankaccount 
+		set bal = new_bal
+		where acct = acct1;
+		return new_bal;
+	end if;
+	
+	
+end;
+/
+			
+
+ 	
+
+
+
+	
+

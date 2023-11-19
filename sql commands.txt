@@ -1,0 +1,61 @@
+create table person(
+driver_id# varchar(30) primary key,
+name varchar(50),
+address varchar(100)
+);
+
+create table car(
+regno varchar(20),
+model varchar(30),
+year int,
+primary key(regno));
+
+create table accident(
+report_number int primary key,
+accd_date date,
+location varchar(50));
+
+create table owns(
+driver_id# varchar(30),
+regno varchar(20),
+primary key(driver_id# , regno),
+foreign key(driver_id#) references person on delete cascade,
+foreign key(regno) references car on delete cascade);
+
+create table participated(
+driver_id# varchar(30),
+regno varchar(20),
+report_number int,
+damage_amount int,
+primary key(driver_id#,regno,report_number),
+foreign key(driver_id#) references person,
+foreign key(regno) references car,
+foreign key(report_number) references accident);
+
+select count(*)
+from participated natural join accident 
+where extract (year from accd_date) = 2018;
+
+select model,count(*) 
+from participated natural join car
+where model = 'Tesla Model X'
+group by model;
+
+select name as OWNER_NAME,count(*) as no_of_accident,sum(damage_amount) as total_damage
+from person natural join participated 
+group by name
+order by total_damage;
+
+select name
+from participated natural join person
+group by name
+having count(report_number) >2;
+
+select *
+from person
+where driver_id# not in
+(select driver_id#
+from participated);
+
+
+
