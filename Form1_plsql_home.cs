@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -118,6 +118,26 @@ namespace prac3
                 conn.Close();
             }
 
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            ConnectDB();
+            OracleCommand comm1 = conn.CreateCommand();
+            comm1.CommandType = CommandType.Text;
+            comm1.CommandText = "select tempfun(" + textBox1.Text + ") from dual";
+            OracleDataReader dr = comm1.ExecuteReader();
+            try
+            {
+                dr.Read();
+                string str = dr.GetInt64(0).ToString();
+                MessageBox.Show(str);
+            }
+            catch (Exception e1)
+            {
+            }
+            comm1.Dispose();
+            conn.Close();
         }
         
     }
